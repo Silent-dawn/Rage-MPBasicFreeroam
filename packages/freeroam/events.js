@@ -1,4 +1,114 @@
-let skins       = require('./configs/skins.json').Skins;
+var mysql = require('mysql');
+var connection = require('./dbsettings.js');
+
+// Connecting to the database for work
+connection.connect(function (err) {
+    if (err) { // if there was an error
+        console.error("Error: " + err.message + ' | ' + "Error connecting to the database!");
+    } else { // otherwise we have connected
+        console.log("Database connected successfully!")
+    }
+});
+
+// SQL Table Injection of PlayerInfo Table (IF THE TABLE DOESNT EXIST)
+connection.query(createPlayers, function (err, results, fields) {
+    if (!err) {
+        console.log(results.message + "Successfully injected SQL table(s)");
+    } else console.error("Error: " + err.message + ' | ' + "SQL injection failed");
+});
+
+//If playername exists check
+function playerRecordExists(player) {
+    var playername = player.name
+    connection.query("SELECT 1 FROM playername WHERE playername = '" + playername + "' ORDER BY playername LIMIT 1", function (err, results, fields) {
+        if (err) {
+            console.error("Error: " + err.message + ' | ' + "Player Check Failed");
+            socket.write("fail internal error" + "\r\n");
+        }
+        if (results.length > 0) {
+            console.log('Player exists in the database');
+        } 
+    });
+}
+//Player Join Identity Assignment
+var PlayersOnline = [];
+
+var Player = function (uuid, name) {
+    this.uuid = uuid;
+    this.name = name;
+    this.ID = FindEmptySlot();
+}
+
+function FindEmptySlot() {
+    for (var i = 0; i < global.MAX_PLAYERS; i++) {
+        if (!IsPlayerLogged(i)) return i;
+    }
+}
+
+module.exports.CreatePlayerClass = function (uuid, name) {
+    var playa = new Player(uuid, name);
+    PlayersOnline[playa.ID] = playa;
+
+    return playa.ID;
+}
+
+module.exports.DeletePlayerClass = function (id) {
+    delete PlayersOnline[id];
+}
+
+module.exports.GetPlayerIDByuuid = function (uuid) {
+    for (var i = 0; i < global.MAX_PLAYERS; i++) {
+        if (IsPlayerLogged(i)) {
+            if (PlayersOnline[i].uuid == uuid) return i;
+        }
+    }
+}
+
+function IsPlayerLogged(id) {
+    return (typeof PlayersOnline[id] !== 'undefined');
+}
+
+module.exports.IsPlayerLogged = IsPlayerLogged;
+
+// PlayerJoin Module
+module.exports =
+    {
+        "playerJoin": player => {
+            player.admin = 0;
+            console.log(player);
+            Logs.Insert("Player " + player.name + " (" + player.ip + ") connected on server");
+            player.dimension = 999;
+            player.outputChatBox("Welcome to the server, " + player.name + " !");
+            DB.Handle.query("SELECT null FROM PlayerInfo WHERE playername = ?", player.name, function (e, result) {
+                if (result.length) {
+                    player.notify("~r~Please login with command /login [Password]");
+                } else player.notify("~r~Please register with command /register [Password]");
+
+            });
+        }
+    }
+
+//Player Spawn Logic
+function playerSpawn(player) {
+
+
+}
+mp.events.add("playerSpawn", playerSpawn);
+
+//Registration On Spawn Event
+function spawnReg(spawned, id, )
+
+
+
+
+
+
+
+
+
+
+
+let skins = require('./configs/skins.json').Skins;
 let spawnPoints = require('./configs/spawn_points.json').SpawnPoints;
 
 /* !!! REMOVE AFTER FIX (TRIGGERED FROM SERVER) !!! */

@@ -27,7 +27,7 @@ module.exports.connection = {
         password: 'K6kdaJaU8n',
         database: 'db12002'
     })
-};
+}
 
  
 //Testing if the connection is sound for use
